@@ -16,8 +16,9 @@ This package provides a comprehensive solution for integrating RabbitMQ messagin
 	Add the package to your project using NuGet Package Manager or the .NET CLI:
 
        dotnet add package EasyRabbitMQ
+   or https://www.nuget.org/packages/EasyRabbitMQ.Net
 
-2. **Configure RabbitMQ Settings:**
+3. **Configure RabbitMQ Settings:**
 
 	Define your RabbitMQ settings in the appsettings.json file:
 
@@ -36,7 +37,7 @@ This package provides a comprehensive solution for integrating RabbitMQ messagin
           }
         }
 
-3. Register Services:
+4. Register Services:
 Register the necessary services in your Startup.cs or Program.cs file:
 
         // RabbitMQ Config
@@ -100,7 +101,7 @@ Register the necessary services in your Startup.cs or Program.cs file:
             return new RabbitMQHostedService(logger, messageConsumer, serviceScopeFactory, queueName, exchangeName, routingKey, exchangeType, mediator);
         });
 
-4. Implement Message Handling:
+5. Implement Message Handling:
 Create a hosted service to handle incoming messages and perform the necessary business logic:
 
         public class RabbitMQHostedService : IHostedService
@@ -161,10 +162,11 @@ Create a hosted service to handle incoming messages and perform the necessary bu
             }
         }
 
-5. implement send to rabbitmq method
+6. implement send to rabbitmq method
 
     inject    
-         private readonly IMessageProducer _messageProducer; // Declare MessageProducer
+ 
+        private readonly IMessageProducer _messageProducer; // Declare MessageProducer
         public test( IMessageProducer messageProducer)
                             {
                                 _messageProducer = messageProducer;
