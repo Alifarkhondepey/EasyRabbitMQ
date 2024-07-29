@@ -16,6 +16,10 @@
 		<RepositoryUrl>https://github.com/Alifarkhondepey/EasyRabbitMQ</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReleaseNotes>
+			- Enhanced error handling on the consumer side.
+		</PackageReleaseNotes>
+		<PackageCopyright>Copyright (c) 2024 AliFarkhondepey</PackageCopyright>
 	</PropertyGroup>
 
 
