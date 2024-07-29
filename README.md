@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # EasyRabbitMQ.Net
 
 This package provides a comprehensive solution for integrating RabbitMQ messaging into your .NET application. It includes classes and interfaces for message producers, consumers, factories, and hosted services for background processing.
@@ -396,4 +395,4 @@ Create a hosted service to handle incoming messages and perform the necessary bu
         }
         
 This `README.md` provides clear and comprehensive instructions for installing and using your `EasyRabbitMQ` package.
->>>>>>> 43a8ebd79cafdba7c36b3fedec61d7dd6ba15a21
+
