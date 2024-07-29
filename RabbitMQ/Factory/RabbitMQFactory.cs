@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using EasyRabbitMQ.Consumer;
-using EasyRabbitMQ.Interface;
-using EasyRabbitMQ.Producer;
+using EasyRabbitMQ.Net.Consumer;
+using EasyRabbitMQ.Net.Interface;
+using EasyRabbitMQ.Net.Producer;
 
-namespace EasyRabbitMQ.RabbitMQ.Factory
+namespace EasyRabbitMQ.Net.RabbitMQ.Factory
 {
     public class RabbitMQFactory
     {

@@ -1,4 +1,4 @@
-# EasyRabbitMQ
+# EasyRabbitMQ.Net
 
 This package provides a comprehensive solution for integrating RabbitMQ messaging into your .NET application. It includes classes and interfaces for message producers, consumers, factories, and hosted services for background processing.
 
@@ -15,7 +15,11 @@ This package provides a comprehensive solution for integrating RabbitMQ messagin
       
 	Add the package to your project using NuGet Package Manager or the .NET CLI:
 
-       dotnet add package EasyRabbitMQ
+       dotnet add package EasyRabbitMQ.Net
+
+       or https://www.nuget.org/packages/EasyRabbitMQ.Net
+
+
 
 2. **Configure RabbitMQ Settings:**
 
@@ -164,7 +168,8 @@ Create a hosted service to handle incoming messages and perform the necessary bu
 5. implement send to rabbitmq method
 
     inject    
-         private readonly IMessageProducer _messageProducer; // Declare MessageProducer
+ 
+        private readonly IMessageProducer _messageProducer; // Declare MessageProducer
         public test( IMessageProducer messageProducer)
                             {
                                 _messageProducer = messageProducer;
@@ -183,4 +188,21 @@ Create a hosted service to handle incoming messages and perform the necessary bu
             }
         }
         
-This `README.md` provides clear and comprehensive instructions for installing and using your `EasyRabbitMQ` package.
+
+## New Features
+
+We have added two sample projects to demonstrate the usage of this package:
+
+- **Producer Sample Project:** Demonstrates how to send messages using `EasyRabbitMQ.Net`.
+- **Consumer Sample Project:** Demonstrates how to consume messages using `EasyRabbitMQ.Net` with enhanced error handling.
+
+These projects provide a clear example of how to set up and use the `EasyRabbitMQ.Net` package for message production and consumption. You can find the complete implementation in the `ProducerApp` and `ConsumerApp` directories.
+
+## Enhanced Error Handling
+
+The package now includes enhanced error handling for the consumer to provide a better user experience. Detailed error information is logged, and optional requeueing can be performed for failed messages.
+
+For more information, please visit the [GitHub repository](https://github.com/Alifarkhondepey/EasyRabbitMQ).
+
+
+This `README.md` provides clear and comprehensive instructions for installing and using your `EasyRabbitMQ.Net` package.

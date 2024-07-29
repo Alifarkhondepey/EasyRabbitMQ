@@ -1,4 +1,4 @@
-﻿namespace EasyRabbitMQ.RabbitMQ.Models;
+﻿namespace EasyRabbitMQ.Net.RabbitMQ.Models;
 public class MessageEnvelope
 {
     public string? MessageType { get; set; }

@@ -4,6 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EasyRabbitMQ.RabbitMQ.Interface;
+namespace EasyRabbitMQ.Net.RabbitMQ.Interface;
 
 public delegate void MessageReceivedCallback<TMessage>(TMessage message);

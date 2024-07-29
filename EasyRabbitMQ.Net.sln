@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35017.193
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyRabbitMQ.Net", "EasyRabbitMQ.Net.csproj", "{CAD7C681-F6D9-429C-A19A-DADE10E73E47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Producer", "..\Producer\Producer.csproj", "{DABC2FB4-4373-41A4-90AF-1AE282A66119}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "..\Consumer\Consumer.csproj", "{2AAC6179-DAE1-48FF-9232-B2C95B78FBD5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CAD7C681-F6D9-429C-A19A-DADE10E73E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAD7C681-F6D9-429C-A19A-DADE10E73E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAD7C681-F6D9-429C-A19A-DADE10E73E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAD7C681-F6D9-429C-A19A-DADE10E73E47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DABC2FB4-4373-41A4-90AF-1AE282A66119}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DABC2FB4-4373-41A4-90AF-1AE282A66119}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DABC2FB4-4373-41A4-90AF-1AE282A66119}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DABC2FB4-4373-41A4-90AF-1AE282A66119}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AAC6179-DAE1-48FF-9232-B2C95B78FBD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AAC6179-DAE1-48FF-9232-B2C95B78FBD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AAC6179-DAE1-48FF-9232-B2C95B78FBD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AAC6179-DAE1-48FF-9232-B2C95B78FBD5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B544C2CD-EE76-400F-9206-BCEE521BA5BF}
+	EndGlobalSection
+EndGlobal

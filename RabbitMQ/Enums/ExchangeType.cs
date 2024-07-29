@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EasyRabbitMQ.RabbitMQ.Enums
+namespace EasyRabbitMQ.Net.RabbitMQ.Enums
 {
     public enum ExchangeType
     {

@@ -1,7 +1,7 @@
-﻿using EasyRabbitMQ.RabbitMQ.Enums;
-using EasyRabbitMQ.RabbitMQ.Interface;
+﻿using EasyRabbitMQ.Net.RabbitMQ.Enums;
+using EasyRabbitMQ.Net.RabbitMQ.Interface;
 
-namespace EasyRabbitMQ.Interface;
+namespace EasyRabbitMQ.Net.Interface;
 public interface IMessageConsumer
 {
     void Consume<TMessage>(string queueName, string exchangeName, string routingKey, ExchangeType exchangeType, MessageReceivedCallback<TMessage> callback);

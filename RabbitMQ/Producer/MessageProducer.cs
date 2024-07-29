@@ -4,10 +4,11 @@ using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System;
 using System.Text;
-using EasyRabbitMQ.Interface;
-using EasyRabbitMQ.RabbitMQ.Models;
+using EasyRabbitMQ.Net.Interface;
+using EasyRabbitMQ.Net.RabbitMQ.Models;
+using System.Reflection.PortableExecutable;
 
-namespace EasyRabbitMQ.Producer
+namespace EasyRabbitMQ.Net.Producer
 {
     public class MessageProducer : IMessageProducer, IDisposable
     {
@@ -33,14 +34,14 @@ namespace EasyRabbitMQ.Producer
             _logger.LogInformation("Initialized MessageProducer with RabbitMQ settings.");
         }
 
-        public void SendMessage<T>(T message, string queueName, string exchangeName, string routingKey, EasyRabbitMQ.RabbitMQ.Enums.ExchangeType exchangeType)
+        public void SendMessage<T>(T message, string queueName, string exchangeName, string routingKey, EasyRabbitMQ.Net.RabbitMQ.Enums.ExchangeType exchangeType, IDictionary<string, object>? headers = null)
         {
             try
             {
                 string exchangeTypeString = exchangeType.ToString().ToLower();
                 _channel.ExchangeDeclare(exchange: exchangeName, type: exchangeTypeString);
 
-                if (exchangeType != EasyRabbitMQ.RabbitMQ.Enums.ExchangeType.Fanout && string.IsNullOrWhiteSpace(routingKey))
+                if (exchangeType != EasyRabbitMQ.Net.RabbitMQ.Enums.ExchangeType.Fanout && string.IsNullOrWhiteSpace(routingKey))
                 {
                     throw new ArgumentException("Routing key is required for direct and topic exchanges.");
                 }
@@ -53,6 +54,11 @@ namespace EasyRabbitMQ.Producer
                 var properties = _channel.CreateBasicProperties();
                 properties.ContentType = "application/json";
                 properties.Type = typeof(T).FullName;
+
+                if (headers != null && exchangeType == EasyRabbitMQ.Net.RabbitMQ.Enums.ExchangeType.Headers)
+                {
+                    properties.Headers = headers;
+                }
 
                 var envelope = new MessageEnvelope
                 {
@@ -87,24 +93,8 @@ namespace EasyRabbitMQ.Producer
         }
     }
 
-    public class RabbitMQSettings
-    {
-        public string? HostName { get; set; }
-        public string? UserName { get; set; }
-        public string? Password { get; set; }
-        public string? ExchangeName { get; set; }
-        public string? QueueName { get; set; }
-        public string? VirtualHost { get; set; }
-        public int Port { get; set; }
-        public SslSettings Ssl { get; set; } = new SslSettings();
-    }
 
-    public class SslSettings
-    {
-        public bool Enabled { get; set; }
-        public string? ServerName { get; set; }
-        public string? AcceptablePolicyErrors { get; set; }
-    }
+  
 
 
     public class MessageReceivedEventArgs<T> : EventArgs
