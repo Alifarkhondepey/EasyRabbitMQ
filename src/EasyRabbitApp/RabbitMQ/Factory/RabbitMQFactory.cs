@@ -1,35 +1,53 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using RabbitMQ.Client;
-using EasyRabbitMQ.Net.Consumer;
+﻿using EasyRabbitMQ.Net.Consumer;
 using EasyRabbitMQ.Net.Interface;
 using EasyRabbitMQ.Net.Producer;
+using EasyRabbitMQ.Net.RabbitMQ.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 
-namespace EasyRabbitMQ.Net.RabbitMQ.Factory
+public class RabbitMQFactory
 {
-    public class RabbitMQFactory
+    private readonly IConfiguration _configuration;
+    private readonly ILoggerFactory _loggerFactory;
+
+    public RabbitMQFactory(IConfiguration configuration, ILoggerFactory loggerFactory)
     {
-        private readonly IConfiguration _configuration;
-        private readonly IConnectionFactory _connectionFactory;
-        private readonly ILoggerFactory _loggerFactory;
+        _configuration = configuration;
+        _loggerFactory = loggerFactory;
+    }
 
-        public RabbitMQFactory(IConfiguration configuration, IConnectionFactory connectionFactory, ILoggerFactory loggerFactory)
+    public async Task<IMessageProducer> CreateProducer()
+    {
+        var logger = _loggerFactory.CreateLogger<MessageProducer>();
+
+        var rabbitMQSettings = _configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>();
+        if (rabbitMQSettings == null || string.IsNullOrWhiteSpace(rabbitMQSettings.HostName)
+                 || string.IsNullOrWhiteSpace(rabbitMQSettings.UserName)
+                 || string.IsNullOrWhiteSpace(rabbitMQSettings.Password)
+                 || string.IsNullOrWhiteSpace(rabbitMQSettings.VirtualHost))
         {
-            _configuration = configuration;
-            _connectionFactory = connectionFactory;
-            _loggerFactory = loggerFactory;
+            throw new Exception("RabbitMQSettings are missing or incomplete.");
         }
 
-        public IMessageProducer CreateProducer()
+        var factory = new ConnectionFactory
         {
-            var logger = _loggerFactory.CreateLogger<MessageProducer>();
-            return new MessageProducer(_configuration, _connectionFactory, logger);
-        }
+            HostName = rabbitMQSettings.HostName,
+            UserName = rabbitMQSettings.UserName,
+            Password = rabbitMQSettings.Password,
+            Port = rabbitMQSettings.Port,
+            VirtualHost = rabbitMQSettings.VirtualHost
+        };
 
-        public IMessageConsumer CreateConsumer()
-        {
-            var logger = _loggerFactory.CreateLogger<MessageConsumer>();
-            return new MessageConsumer(_configuration, _connectionFactory, logger);
-        }
+        var connection = await factory.CreateConnectionAsync();
+        var channel = await connection.CreateChannelAsync();
+
+        return new MessageProducer(connection, channel, logger);
+    }
+
+    public async Task<IMessageConsumer> CreateConsumerAsync()
+    {
+        var logger = _loggerFactory.CreateLogger<MessageConsumer>();
+        return await MessageConsumer.CreateAsync(_configuration, logger);
     }
 }

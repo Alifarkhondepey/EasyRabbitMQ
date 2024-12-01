@@ -3,55 +3,80 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System;
+using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using EasyRabbitMQ.Net.Interface;
 using EasyRabbitMQ.Net.RabbitMQ.Models;
-using System.Reflection.PortableExecutable;
 
 namespace EasyRabbitMQ.Net.Producer
 {
     public class MessageProducer : IMessageProducer, IDisposable
     {
         private readonly IConnection _connection;
-        private readonly IModel _channel;
+        private readonly IChannel _channel; // Updated to IChannel
         private readonly ILogger<MessageProducer> _logger;
-        private readonly RabbitMQSettings _rabbitMQSettings;
 
-        public MessageProducer(IConfiguration configuration, IConnectionFactory connectionFactory, ILogger<MessageProducer> logger)
+        public MessageProducer(IConnection connection, IChannel channel, ILogger<MessageProducer> logger)
         {
-            _connection = connectionFactory.CreateConnection();
-            _channel = _connection.CreateModel();
-            _logger = logger;
+            _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+            _channel = channel ?? throw new ArgumentNullException(nameof(channel));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
 
+        // Asynchronous factory method for initialization
+        public static async Task<MessageProducer> CreateAsync(IConfiguration configuration, ILogger<MessageProducer> logger)
+        {
             var rabbitMQSettingsSection = configuration.GetSection("RabbitMQ");
             if (rabbitMQSettingsSection == null)
             {
                 throw new Exception("RabbitMQSettings section is missing in the configuration.");
             }
 
-            _rabbitMQSettings = rabbitMQSettingsSection.Get<RabbitMQSettings>() ?? throw new Exception("Failed to bind RabbitMQSettings from configuration.");
+            var rabbitMQSettings = rabbitMQSettingsSection.Get<RabbitMQSettings>() ?? throw new Exception("Failed to bind RabbitMQSettings from configuration.");
+            if (rabbitMQSettings == null || rabbitMQSettings.HostName == null || rabbitMQSettings.UserName == null || rabbitMQSettings.Password == null)
+            {
+                throw new Exception("RabbitMQSettings section is missing in the configuration.");
 
-            _logger.LogInformation("Initialized MessageProducer with RabbitMQ settings.");
+            }
+            var factory = new ConnectionFactory
+            {
+                HostName = rabbitMQSettings.HostName,
+                UserName = rabbitMQSettings.UserName,
+                Password = rabbitMQSettings.Password,
+                Port = rabbitMQSettings.Port
+            };
+
+            var connection = await factory.CreateConnectionAsync();
+            var channel = await connection.CreateChannelAsync();
+
+            logger.LogInformation("MessageProducer initialized.");
+            return new MessageProducer(connection, channel, logger);
         }
 
-        public void SendMessage<T>(T message, string queueName, string exchangeName, string routingKey, EasyRabbitMQ.Net.RabbitMQ.Enums.ExchangeType exchangeType, IDictionary<string, object>? headers = null)
+        public async Task SendMessageAsync<T>(
+            T message,
+            string queueName,
+            string exchangeName,
+            string routingKey,
+            EasyRabbitMQ.Net.RabbitMQ.Enums.ExchangeType exchangeType,
+            IDictionary<string, object>? headers = null)
         {
             try
             {
                 string exchangeTypeString = exchangeType.ToString().ToLower();
-                _channel.ExchangeDeclare(exchange: exchangeName, type: exchangeTypeString);
+                await _channel.ExchangeDeclareAsync(exchange: exchangeName, type: exchangeTypeString);
 
                 if (exchangeType != EasyRabbitMQ.Net.RabbitMQ.Enums.ExchangeType.Fanout && string.IsNullOrWhiteSpace(routingKey))
                 {
                     throw new ArgumentException("Routing key is required for direct and topic exchanges.");
                 }
 
-
-                _channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                _channel.QueueBind(queue: queueName, exchange: exchangeName, routingKey: routingKey);
+                await _channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+                await _channel.QueueBindAsync(queue: queueName, exchange: exchangeName, routingKey: routingKey);
 
                 var messageString = JsonConvert.SerializeObject(message);
-                var properties = _channel.CreateBasicProperties();
+                var properties = new BasicProperties();
                 properties.ContentType = "application/json";
                 properties.Type = typeof(T).FullName;
 
@@ -69,7 +94,14 @@ namespace EasyRabbitMQ.Net.Producer
                 var envelopeString = JsonConvert.SerializeObject(envelope);
                 var envelopeBytes = Encoding.UTF8.GetBytes(envelopeString);
 
-                _channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: envelopeBytes);
+                await _channel.BasicPublishAsync(
+                    exchange: exchangeName,
+                    routingKey: routingKey,
+                    mandatory: false, // Use false unless you require mandatory delivery
+                    basicProperties: properties,
+                    body: envelopeBytes,
+                    cancellationToken: CancellationToken.None // Optional cancellation token
+                );
 
                 _logger.LogInformation($"Sent message '{messageString}' to exchange '{exchangeName}' with routing key '{routingKey}'");
             }
@@ -79,9 +111,9 @@ namespace EasyRabbitMQ.Net.Producer
             }
         }
 
-        public void CloseConnection()
+        public async Task CloseConnectionAsync()
         {
-            _connection.Close();
+            await _connection.CloseAsync();
             _logger.LogInformation("RabbitMQ connection closed.");
         }
 
@@ -92,10 +124,6 @@ namespace EasyRabbitMQ.Net.Producer
             _logger.LogInformation("Disposed RabbitMQ channel and connection.");
         }
     }
-
-
-  
-
 
     public class MessageReceivedEventArgs<T> : EventArgs
     {

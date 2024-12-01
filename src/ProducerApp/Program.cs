@@ -1,5 +1,6 @@
 ﻿using EasyRabbitMQ.Net.Interface;
 using EasyRabbitMQ.Net.Producer;
+using EasyRabbitMQ.Net.RabbitMQ.Extensions;
 using EasyRabbitMQ.Net.RabbitMQ.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ namespace ProducerApp
     {
         static async Task Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
+            var host = await CreateHostBuilder(args);
             var producer = host.Services.GetRequiredService<IMessageProducer>();
 
             var message = "Hello, World!";
@@ -24,7 +25,7 @@ namespace ProducerApp
 
             try
             {
-                producer.SendMessage<string>(message, queueName, exchangeName, routingKey, exchangeType);
+               await producer.SendMessageAsync<string>(message, queueName, exchangeName, routingKey, exchangeType);
                 Console.WriteLine($"Message sent with routing key: {routingKey}");
             }
             catch (RabbitMQ.Client.Exceptions.OperationInterruptedException ex)
@@ -43,35 +44,23 @@ namespace ProducerApp
             await host.RunAsync();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((context, config) =>
-                {
-                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                })
+        public static async Task<IHost> CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {
-                    services.Configure<RabbitMQSettings>(context.Configuration.GetSection("RabbitMQ"));
-                    services.AddSingleton<IConnectionFactory>(sp =>
-                    {
-                        var rabbitMQSettings = sp.GetRequiredService<IConfiguration>().GetSection("RabbitMQ").Get<RabbitMQSettings>();
-                        return new ConnectionFactory
-                        {
-                            HostName = rabbitMQSettings.HostName,
-                            UserName = rabbitMQSettings.UserName,
-                            Password = rabbitMQSettings.Password,
-                            VirtualHost = rabbitMQSettings.VirtualHost,
-                            Port = rabbitMQSettings.Port,
-                            Ssl = new SslOption
-                            {
-                                Enabled = rabbitMQSettings.Ssl.Enabled,
-                                ServerName = rabbitMQSettings.Ssl.ServerName,
-                                AcceptablePolicyErrors = SslPolicyErrors.RemoteCertificateNameMismatch |
-                                    SslPolicyErrors.RemoteCertificateChainErrors
-                            }
-                        };
-                    });
-                    services.AddSingleton<IMessageProducer, MessageProducer>();
-                });
+                    // Add RabbitMQ services via extension method
+                    services.AddRabbitMQServices(context.Configuration);
+
+                    // Additional logging or other services can be registered here
+                    services.AddLogging();
+                })
+                .Build();
+        }
+
+
+
+
+
     }
 }

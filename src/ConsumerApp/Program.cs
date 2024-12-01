@@ -1,11 +1,11 @@
 ﻿using EasyRabbitMQ.Net.Consumer;
 using EasyRabbitMQ.Net.Interface;
-using EasyRabbitMQ.Net.RabbitMQ.Models;
-using Microsoft.Extensions.Configuration;
+using EasyRabbitMQ.Net.RabbitMQ.Extensions;
+using EasyRabbitMQ.Net.RabbitMQ.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RabbitMQ.Client;
-using System.Net.Security;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace ConsumerApp
 {
@@ -13,16 +13,20 @@ namespace ConsumerApp
     {
         static async Task Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
+            var host = CreateHostBuilder(args).Build(); // Build the host
+
+            // Resolve the IMessageConsumer from the DI container
             var consumer = host.Services.GetRequiredService<IMessageConsumer>();
 
-            var queueName = "test-queue";
+            // Define RabbitMQ settings
+            var queueName = "test-queue1";
             var exchangeName = "test-exchange";
             var routingKey = "test-key";
-            var exchangeType = EasyRabbitMQ.Net.RabbitMQ.Enums.ExchangeType.Direct;
+            var exchangeType = ExchangeType.Direct;
 
             try
             {
+                // Start consuming messages
                 consumer.Consume<string>(queueName, exchangeName, routingKey, exchangeType, message =>
                 {
                     Console.WriteLine($"Received message: {message}");
@@ -46,35 +50,22 @@ namespace ConsumerApp
             await host.RunAsync();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, config) =>
                 {
+                    // Load RabbitMQ configuration from appsettings.json
                     config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.Configure<RabbitMQSettings>(context.Configuration.GetSection("RabbitMQ"));
-                    services.AddSingleton<IConnectionFactory>(sp =>
-                    {
-                        var rabbitMQSettings = sp.GetRequiredService<IConfiguration>().GetSection("RabbitMQ").Get<RabbitMQSettings>();
-                        return new ConnectionFactory
-                        {
-                            HostName = rabbitMQSettings.HostName,
-                            UserName = rabbitMQSettings.UserName,
-                            Password = rabbitMQSettings.Password,
-                            VirtualHost = rabbitMQSettings.VirtualHost,
-                            Port = rabbitMQSettings.Port,
-                            Ssl = new SslOption
-                            {
-                                Enabled = rabbitMQSettings.Ssl.Enabled,
-                                ServerName = rabbitMQSettings.Ssl.ServerName,
-                                AcceptablePolicyErrors = SslPolicyErrors.RemoteCertificateNameMismatch |
-                                    SslPolicyErrors.RemoteCertificateChainErrors
-                            }
-                        };
-                    });
-                    services.AddSingleton<IMessageConsumer, MessageConsumer>();
+                    // Add RabbitMQ services using the extension method
+                    services.AddRabbitMQServices(context.Configuration);
+
+                    // Register additional logging if needed
+                    services.AddLogging();
                 });
+        }
     }
 }
